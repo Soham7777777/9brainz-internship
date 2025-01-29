@@ -1,0 +1,7 @@
+# Passing tests
+http -vv GET :8090/user/login name=="user one" password_text=="123456" device_type=="laptop"
+http -vv :8090/user/protected Authorization:"Bearer $TOKEN"
+
+# Failing tests
+http -vv :8090/user/protected
+http -vv GET :8090/user/login name=="user one" password=="123456"
