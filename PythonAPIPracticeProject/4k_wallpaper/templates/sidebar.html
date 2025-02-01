@@ -1,0 +1,35 @@
+{% url "home" as home_url %}
+{% url "categories" as categories_url %}
+{% url "images" as images_url %}
+{% url "settings" as settings_url %}
+
+<li class="nav-item">
+    <a class="nav-link {% if request.path != home_url %} collapsed {% endif %}" href="{{ home_url }}">
+    <i class="bi bi-person-circle fs-4"></i>
+    <span>Profile</span>
+    </a>
+</li>
+
+
+<li class="nav-item">
+    <a class="nav-link {% if request.path != categories_url %} collapsed {% endif %}" href="{{ categories_url }}">
+    <i class="bi bi-boxes fs-4"></i>
+    <span>Categories</span>
+    </a>
+</li>
+
+
+<li class="nav-item">
+    <a class="nav-link {% if request.path != images_url %} collapsed {% endif %}" href="{{ images_url }}">
+    <i class="bi bi-images fs-4"></i>
+    <span>Images</span>
+    </a>
+</li>
+
+
+<li class="nav-item">
+    <a class="nav-link {% if request.path != settings_url %} collapsed {% endif %}" href="{{ settings_url }}">
+    <i class="bi bi-gear-fill fs-4"></i>
+    <span>Settings</span>
+    </a>
+</li>
