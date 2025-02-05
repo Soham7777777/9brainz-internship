@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %} Images {% endblock title %}
+
+{% block main %}
+
+<form method="get" class="col-auto">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+             {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
+            <button type="submit" class="btn btn-primary fw-bold">Search</button>
+            <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "add_image" %}')">Add New Image</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+
+{% if images %}
+{% for image in images  %}
+<div class="card-container my-4">
+    <div class="card d-flex flex-sm-row flex-column w-100">
+      <div class="ratio ratio-16x9 w-25">
+          <img src="{{ MEDIA_URL }}{{ image.image_file }}" alt="{{ image.name }}">
+      </div>
+  
+      <div class="d-flex flex-column justify-content-between px-3 py-2 w-100">
+        <span class="card-title fs-4 p-0">{{ image.name }}</span>
+        <div class="d-flex align-items-start h-100 pt-2">
+          <div class="overflow-y-scroll" style="max-height: 140px;">
+            <p class="card-text" style="font-size: 1.15em;">
+              {% for tag in image.tags %}
+                <span class="badge text-bg-secondary">{{ tag }}</span>
+              {% endfor %}
+            </p>
+            <p>
+                Total Downloads: <span class="fw-bold"> {{ image.download_count }} </span> <br>
+                Category: <span class="fw-bold"> {{ image.category__name }} </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="text-muted py-2 d-flex justify-content-between">
+          <button type="button" class="btn btn-danger" onclick="sendRequest('{% url "delete_image" %}{% querystring id=image.id %}')"><i class="bi bi-trash3-fill"></i></button>
+          <button type="button" class="btn btn-info" onclick="sendRequest('{% url "edit_image" %}{% querystring id=image.id %}')"><i class="bi bi-pencil-fill"></i></button>
+        </div>
+      </div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% block script %}
+{{ block.super }}
+<script>
+  function sendRequest(url) {
+    
+    if (url) {
+      window.location.href = url;
+    } else {
+      alert("Please enter a URL.");
+    }
+  }
+</script>
+{% endblock script %}
+
+{% endblock main %}

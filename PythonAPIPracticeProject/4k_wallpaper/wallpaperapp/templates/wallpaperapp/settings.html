@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+
+{% block title %} Settings {% endblock title %}
+
+
+{% block main %}
+
+<div class="mb-3 mt-5">
+    <h3>Change Maximum Image File Size</h3> <hr>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {% if form1.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form1.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    
+    {% if form1.max_image_size.errors %}
+        <div class="alert alert-danger">
+            {% for error in form1.max_image_size.errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <label for="{{ form1.max_image_size.id_for_label }}">Max Image File Size in kb</label>
+    
+    <div class="input-group mb-3 mt-2">
+        {{ form1.max_image_size|add_class:"form-control"|attr:"placeholder:Enter max image size"|default:form1.max_image_size.value }}
+
+        <button type="submit" class="btn btn-primary" name="form1_submit">Update</button>
+    </div>
+</form>
+
+<p>Want to change admin password? <a href="{% url "change_password" %}">click here</a></p>
+
+<div class="mb-3 mt-5">
+    <h3>Add Image Dimensions</h3> <hr>
+</div>
+
+<div class="container mt-5">
+    <form method="post">
+        {% csrf_token %}
+
+        <p>Add Image Size<p>
+
+        {% if form2.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form2.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    
+    
+        {% if form2.width.errors %}
+            <div class="alert alert-danger">
+                {% for error in form2.width.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if form2.height.errors %}
+            <div class="alert alert-danger">
+                {% for error in form2.height.errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col">
+                {{ form2.width }}
+            </div>
+            <div class="col">
+                {{ form2.height }}
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary" name="form2_submit">Add</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+{% if sizes %}
+<div class="container mt-5">
+    <table class="table table-bordered table-responsive table-striped">
+        <thead>
+            <tr>
+                <th>Sr.</th>
+                <th>Sizes</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for size in sizes %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ size.width }} x {{ size.height }}</td>
+                    <td><a class="text-danger" href="{% url "delete_size" %}{% querystring id=size.id %}"><i class="bi bi-trash3-fill"></i></a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock main %}

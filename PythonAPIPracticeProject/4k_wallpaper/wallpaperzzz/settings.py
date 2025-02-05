@@ -36,7 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'userapp',
     'widget_tweaks',
+    'wallpaperapp',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,23 @@ LOGIN_URL = "/login"
 
 
 LOGOUT_REDIRECT_URL = LOGIN_URL
+
+AUTH_USER_MODEL = "userapp.User"
+
+DEFAULT_FROM_EMAIL = "soham.9brainz@gmail.com"
+
+EMAIL_HOST_PASSWORD = "yvfa slok bagy pvai"
+
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL
+
+EMAIL_HOST = "smtp.gmail.com"
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+EMAIL_USE_SSL = False
+
+MEDIA_ROOT = '/home/soham/Documents/Internships/9brainz/PythonAPIPracticeProject/4k_wallpaper/uploads'
+
+MEDIA_URL = 'media/'

@@ -14,17 +14,37 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.shortcuts import render
 from django.urls import path
-from django.contrib.auth.views import LoginView, LogoutView
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from wallpaperapp.views import categories_view, delete_category, edit_category, add_category, images_view, settings_view, profile_view, delete_image, delete_size, add_image, edit_image, login_required
+from .forms import LoginForm
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 urlpatterns = [
-    path('', login_required(lambda request : render(request, 'base.html')), name="home"),
-    path('categories', login_required(lambda request : render(request, 'base.html')), name="categories"),
-    path('settings', login_required(lambda request : render(request, 'base.html')), name="settings"),
-    path('images', login_required(lambda request : render(request, 'base.html')), name="images"),
+    path('', profile_view, name="home"),
 
-    path("login", LoginView.as_view(template_name='login.html')),
-    path("logout", LogoutView.as_view(), name='logout'),
-]
+    path('categories', categories_view, name="categories"),
+    path('delete-category', delete_category, name="delete_category"),
+    path('edit-category', edit_category, name="edit_category"),
+    path('add-category', add_category, name="add_category"),
+
+    path('images', images_view, name="images"),
+    path('delete-image', delete_image, name="delete_image"),
+    path('add-image', add_image, name="add_image"),
+    path('edit-image', edit_image, name="edit_image"),
+
+    path('settings', settings_view, name="settings"),
+    path('delete-size', delete_size, name="delete_size"),
+
+    path('login', LoginView.as_view(template_name='login.html', authentication_form=LoginForm), name='login'),
+    path('logout', LogoutView.as_view(), name='logout'),
+    path('change-password', login_required(PasswordChangeView.as_view(success_url='', template_name='change_password.html')), name='change_password'),
+    
+    path('password_reset/', PasswordResetView.as_view(), name='password_reset'),
+    path('password_reset_done/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset_complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

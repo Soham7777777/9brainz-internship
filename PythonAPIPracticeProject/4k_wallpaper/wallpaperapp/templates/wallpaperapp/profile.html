@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block main %}
+<div class="mb-4"><span>Admin Name: </span> <span class="fw-bold">WALLPAPERZZZ</span><br></div>
+
+<div class="mb-4"><span>Admin Email: </span> <span class="fw-bold">{{ context.email }}</span><br></div>
+
+<div class="mb-4"><span>Total Categories: </span> <span class="fw-bold">{{ context.total_categories }}</span><br></div>
+
+<div class="mb-4"><span>Total Images: </span> <span class="fw-bold">{{ context.total_images }}</span><br></div>
+
+<div class="mb-4"><span>Total Downloads: </span> <span class="fw-bold">{{ context.total_downloads }}</span><br></div>
+{% endblock main %}

@@ -1,7 +1,6 @@
 from django.apps import AppConfig
 
 
-class WallpaperappConfig(AppConfig):
+class UserappConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'wallpaperapp'
-
+    name = 'userapp'

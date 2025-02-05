@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+
+{% block title %} Add Image {% endblock title %}
+
+{% block main %}
+
+<div class="mb-5">
+    <h2>Add New Image</h2> <hr>
+</div>
+
+<div class="container mt-5">
+    
+
+    <form method="post" id="finalForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="form-group mb-4">
+            <label for="{{ form.image_file.id_for_label }}">Upload Image</label>
+            {{ form.image_file|add_class:"form-control" }}
+            {% if form.image_file.errors %}
+                <div class="text-danger">
+                    {% for error in form.image_file.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+            {% render_field form.category class="form-select" %}
+            {% if form.category.errors %}
+                <div class="text-danger">
+                    {% for error in form.category.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
+        <div id="tagsContainer" class="d-flex flex-wrap mb-3 gap-2"></div>
+
+        <div class="row g-3">
+            <div class="col-auto">
+                {{ form.tags|add_class:"form-control"|attr:"id:tagInput"|attr:"placeholder:Add a tag" }}
+                {% if form.tags.errors %}
+                    <div class="text-danger">
+                        {% for error in form.tags.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="button" class="btn btn-primary mt-2" id="addButton">Add Tag</button>
+
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <button type="button" class="btn btn-success" onclick="submitTags()">Add Image</button>
+        </div>
+    </form>
+</div>
+{% endblock main %}
+
+{% block script %}
+{{ block.super }}
+<script src="{% static 'js/tags.js' %}"></script>
+{% endblock script %}
