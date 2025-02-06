@@ -1,0 +1,15 @@
+annotated-types      0.7.0
+asgiref              3.8.1
+Django               5.1.5
+django-stubs         5.1.2
+django-stubs-ext     5.1.2
+django-widget-tweaks 1.5.0
+mypy                 1.14.1
+mypy-extensions      1.0.0
+pillow               11.1.0
+pip                  24.0
+pydantic             2.10.6
+pydantic_core        2.27.2
+sqlparse             0.5.3
+types-PyYAML         6.0.12.20241230
+typing_extensions    4.12.2

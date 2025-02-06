@@ -1,4 +1,4 @@
-{% extends "wallpaperapp/base.html" %}
+{% extends "image2app/base.html" %}
 {% load widget_tweaks %}
 
 
@@ -15,7 +15,7 @@
           <span class="input-group-text"><i class="bi bi-search"></i></span>
            {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
           <button type="submit" class="btn btn-primary fw-bold">Search</button>
-          <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "add_category" %}')">Add New Category</button>
+          <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "v2_add_category" %}')">Add New Category</button>
         </div>
       </div>
     </div>
@@ -42,8 +42,8 @@
       
       <div class="text-muted py-2 d-flex justify-content-between">
         
-        <button type="button" class="btn btn-danger" onclick="sendRequest('{% url "delete_category" %}{% querystring id=category.id %}')"><i class="bi bi-trash3-fill"></i></button>
-        <button type="button" class="btn btn-info" onclick="sendRequest('{% url "edit_category" %}{% querystring id=category.id %}')"><i class="bi bi-pencil-fill"></i></button>
+        <button type="button" class="btn btn-danger" onclick="sendRequest('{% url "v2_delete_category" %}{% querystring id=category.id %}')"><i class="bi bi-trash3-fill"></i></button>
+        <button type="button" class="btn btn-info" onclick="sendRequest('{% url "v2_edit_category" %}{% querystring id=category.id %}')"><i class="bi bi-pencil-fill"></i></button>
       </div>
     </div>
   </div>

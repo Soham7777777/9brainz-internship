@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'userapp',
     'widget_tweaks',
     'wallpaperapp',
+    'image2app',
 ]
 
 MIDDLEWARE = [

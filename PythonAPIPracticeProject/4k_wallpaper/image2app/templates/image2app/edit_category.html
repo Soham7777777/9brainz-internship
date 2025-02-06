@@ -1,52 +1,46 @@
-{% extends "wallpaperapp/base.html" %}
+{% extends "image2app/base.html" %}
 {% load widget_tweaks %}
 
-{% block title %}Add Category{% endblock title %}
 
+{% block title %}Edit Category{% endblock title %}
 
 {% block main %}
-
-<div class="mb-5">
-    <h2>Add New Category</h2> <hr>
-</div>
-
-<form method="post" enctype="multipart/form-data">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    
+    <h2>Edit Category: {{ category.name }}</h2>
+
     {% if form.non_field_errors %}
         <div class="alert alert-danger">
-            <ul>
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
         </div>
     {% endif %}
-    
+
     <div class="form-group mb-4">
         <label for="{{ form.name.id_for_label }}">Name</label>
-        {{ form.name|add_class:"form-control"|attr:"placeholder:Enter category name" }}
+        {{ form.name|add_class:"form-control"|attr:"placeholder:Category Name" }}
         {% if form.name.errors %}
-            <div class="text-danger">
+            <div class="field-errors">
                 {% for error in form.name.errors %}
-                    <p>{{ error }}</p>
+                    <p class="text-danger">{{ error }}</p>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
-    
+
     <div class="form-group mb-4">
         <label for="{{ form.thumbnail.id_for_label }}">Thumbnail</label>
         {{ form.thumbnail|add_class:"form-control" }}
         {% if form.thumbnail.errors %}
-            <div class="text-danger">
+            <div class="field-errors">
                 {% for error in form.thumbnail.errors %}
-                    <p>{{ error }}</p>
+                    <p class="text-danger">{{ error }}</p>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
-    
-    <button type="submit" class="btn btn-success">Submit</button>
+
+    <button type="submit" class="btn btn-success">Save Changes</button>
 </form>
 {% endblock main %}
