@@ -1,7 +1,9 @@
 {% url "home" as home_url %}
-{% url "categories" as categories_url %}
+{% url "v2_categories" as categories_url %}
 {% url "images" as images_url %}
 {% url "settings" as settings_url %}
+{% url "wallpapers" as wallpapers_url %}
+
 
 <li class="nav-item">
     <a class="nav-link {% if request.path != home_url %} collapsed {% endif %}" href="{{ home_url }}">
@@ -26,6 +28,12 @@
     </a>
 </li>
 
+<li class="nav-item">
+    <a class="nav-link {% if request.path != wallpapers_url %} collapsed {% endif %}" href="{{ wallpapers_url }}">
+    <i class="bi bi-images fs-4"></i>
+    <span>Image2</span>
+    </a>
+</li>
 
 <li class="nav-item">
     <a class="nav-link {% if request.path != settings_url %} collapsed {% endif %}" href="{{ settings_url }}">

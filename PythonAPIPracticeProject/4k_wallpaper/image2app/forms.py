@@ -1,7 +1,12 @@
 import re
 from django import forms
-from .models import ImageDimension, SiteSettings, WallpaperCategory
+from .models import ImageDimension, WallpaperCategory
+from wallpaperapp.models import SiteSettings
 from django.core.exceptions import ValidationError
+from PIL import Image as PILImage
+from django.core.files.images import ImageFile
+from django.core.files import File
+import io
 
 
 def validate_name(value):
@@ -53,3 +58,69 @@ class EditImageCategoryForm(forms.ModelForm):
     class Meta:
         model = WallpaperCategory
         fields = ['name', 'thumbnail']
+
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.ImageField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
+
+class AddWallpaperForm(forms.Form):
+    name = forms.CharField(validators=[validate_name], max_length=255)
+    image_files = MultipleFileField()
+    category = forms.ModelChoiceField(queryset=WallpaperCategory.objects.all())
+    tags = forms.CharField()
+
+
+    def clean_image_files(self):
+        images = self.cleaned_data['image_files']
+
+        image_data = []
+        for image in images:
+            site_settings = SiteSettings.objects.first()
+            if not site_settings:
+                raise ValidationError("Maximum image size limit is not set")
+
+            if image.size > site_settings.max_image_size * 1024:
+                raise ValidationError("Image size exceeds the allowed limit")
+
+            img = PILImage.open(image)
+            width, height = img.size
+
+            valid_sizes = list(ImageDimension.objects.values_list("width", "height"))
+            if not valid_sizes:
+                raise ValidationError("There are no sizes to match against")
+
+            if (width, height) not in valid_sizes:
+                raise ValidationError("Image does not match to any supported dimensions")
+            
+            image_data.append((image, (width, height)))
+
+        return image_data
+
+
+    def clean_tags(self):
+        tags_value = self.cleaned_data.get("tags", "")
+        tags = [tag.strip() for tag in tags_value.split(",") if tag.strip()]
+        if not tags:
+            raise ValidationError("At least one valid tag is required")
+
+        if not all(tag.islower() and all(c.isalpha() or c.isspace() for c in tag) for tag in tags):
+            raise ValidationError("Tags must only contain lowercase letters and spaces")
+
+        return tags
+
+

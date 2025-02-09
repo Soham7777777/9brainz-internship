@@ -9,10 +9,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wallpaperzzz.settings")
 django.setup()
 
 
-from wallpaperapp.models import ImageCategory, Image, ImageTags
+from image2app.models import Wallpaper, WallpaperCategory, WallpaperTag, Image, ImageDimension
 from userapp.models import User
 
-MOCK_IMAGES_DIR = 'mock_images'
+MOCK_IMAGES_DIR = 'mock_images/wallpapers'
 
 tags = [
     "nature", "landscape", "sunset", "mountains", "beach", "forest", "ocean", 
@@ -24,40 +24,100 @@ tags = [
     "peaceful", "serene", "storm", "cloudy", "blue", "green", "pink", "red", 
     "purple", "yellow", "orange", "greenery", "sunbeam", "starry", "underwater"
 ]
-categories = ["Nature", "Technology", "Abstract", "Portraits", "Urban Exploration"]
-category_thumbnails_dir = os.path.join(MOCK_IMAGES_DIR, 'category_thumbnails')
-wallpapers_dir = os.path.join(MOCK_IMAGES_DIR, 'wallpapers')
-wallpaper_category_dirs = [os.path.join(wallpapers_dir, d) for d in os.listdir(wallpapers_dir) if os.path.isdir(os.path.join(wallpapers_dir, d))]
 
 
 def main() -> None:
     User.objects.create_superuser(email="sohamjobanputra7@gmail.com", password="soham@123")
 
-    categories_instances: list[ImageCategory] = []
-    image_instances: list[Image] = []
-
-    for idx, file in enumerate(os.listdir(category_thumbnails_dir)):
-        file_path = os.path.join(category_thumbnails_dir, file)
-        if os.path.isfile(file_path):
-            with Path(file_path).open(mode="rb") as f:
-                category_instance = ImageCategory(name=f"{categories[idx]}", thumbnail=File(f, file))
-                category_instance.save()
-                categories_instances.append(category_instance)
-
-    for idx_i, wallpaper_category_dir in enumerate(wallpaper_category_dirs, start=1):
-        for idx_j, file in enumerate(os.listdir(wallpaper_category_dir), start=1):
-            file_path = os.path.join(wallpaper_category_dir, file)
-            if os.path.isfile(file_path):
-                with Path(file_path).open(mode="rb") as f:
-                    image_instance = Image(image_file=File(f, file), category=categories_instances[idx_i - 1], download_count=random.randint(47, 67))
-                    image_instance.save()
-                    image_instances.append(image_instance)
+    size1 = ImageDimension(width=3840, height=2160)
+    size2 = ImageDimension(width=1920, height=1080)
+    size3 = ImageDimension(width=1280, height=720)
+    size1.save()
+    size2.save()
+    size3.save()
 
 
-    for image_instance in image_instances:
-        random_number_of_tags = random.randint(3, 7)
-        for _ in range(random_number_of_tags):
-            ImageTags(image=image_instance, tag=random.choice(tags)).save()
+    thumbnail1_path = os.path.join(MOCK_IMAGES_DIR, 'Category1', 'thumbnail.png')
+    thumbnail2_path = os.path.join(MOCK_IMAGES_DIR, 'Category2', 'thumbnail.png')
+    thumbnail3_path = os.path.join(MOCK_IMAGES_DIR, 'Category3', 'thumbnail.png')
+
+
+    category1 = WallpaperCategory(name="Nature", thumbnail=File(Path(thumbnail1_path).open(mode="rb")))
+    category2 = WallpaperCategory(name="Technology", thumbnail=File(Path(thumbnail2_path).open(mode="rb")))
+    category3 = WallpaperCategory(name="Portraits", thumbnail=File(Path(thumbnail3_path).open(mode="rb")))
+    category1.save()
+    category2.save()
+    category3.save()
+
+
+    wallpapers = [
+        Wallpaper(category=category1, name="Mountain"),
+        Wallpaper(category=category1, name="Sea"),
+        Wallpaper(category=category1, name="Land"),
+
+        Wallpaper(category=category2, name="Mountain"),
+        Wallpaper(category=category2, name="Sea"),
+        Wallpaper(category=category2, name="Land"),
+
+        Wallpaper(category=category3, name="Mountain"),
+        Wallpaper(category=category3, name="Sea"),
+        Wallpaper(category=category3, name="Land"),
+    ]
+
+    for wallpaper in wallpapers:
+        wallpaper.save()
+
+
+    for wallpaper in wallpapers:
+        for _ in range(random.randint(5, 8)):
+            WallpaperTag(wallpaper=wallpaper, tag=random.choice(tags)).save()
+    
+
+    image_paths = [
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper1', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper1', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper1', 'size3.png'),
+        
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper2', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper2', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper2', 'size3.png'),
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category1', 'Wallpaper3', 'size1.png'),
+
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper1', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper1', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper1', 'size3.png'),
+        
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper2', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper2', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper2', 'size3.png'),
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category2', 'Wallpaper3', 'size1.png'),
+
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper1', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper1', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper1', 'size3.png'),
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper2', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper2', 'size2.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper2', 'size3.png'),
+
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper3', 'size1.png'),
+        os.path.join(MOCK_IMAGES_DIR, 'Category3', 'Wallpaper3', 'size1.png'),
+    ]
+
+    i = 0
+    for wallpaper in wallpapers:
+        for dimension in [size1, size2, size3]:
+            Image(wallpaper=wallpaper, dimension=dimension, image_file=File(Path(image_paths[i]).open(mode="rb"))).save()
+            i += 1
 
 
 if __name__ == '__main__':

@@ -1,0 +1,48 @@
+{% extends "wallpaperapp/base.html" %}
+{% load widget_tweaks %}
+
+{% block title %} Wallpapers {% endblock title %}
+
+{% block main %}
+<form method="get" class="col-auto">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+             {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
+            <button type="submit" class="btn btn-primary fw-bold">Search</button>
+            <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "add_wallpaper" %}')">Add New Wallpaper</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</form>
+{% if wallpapers %}
+{% for wallpaper in wallpapers %}
+<span> Name: </span><span class="fw-bold">{{ wallpaper.name }}</span> <br>
+<span> Category: </span><span class="fw-bold">{{ wallpaper.category }}</span> <br>
+<span> Tags: </span><span> {{ wallpaper.tags }} </span> <br>
+<a style="color:red;" href="{% url "delete_wallpaper" %}{% querystring id=wallpaper.id %}">Delete</a>
+<br>
+<hr>
+{% endfor %}
+{% else %}
+No wallpapers
+{% endif %}
+{% endblock main %}
+
+
+{% block script %}
+{{ block.super }}
+<script>
+  function sendRequest(url) {
+    
+    if (url) {
+      window.location.href = url;
+    } else {
+      alert("Please enter a URL.");
+    }
+  }
+</script>
+{% endblock script %}

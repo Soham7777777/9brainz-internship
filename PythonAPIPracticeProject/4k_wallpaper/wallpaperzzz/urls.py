@@ -16,7 +16,8 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
-from wallpaperapp.views import categories_view, delete_category, edit_category, add_category, images_view, settings_view, profile_view, delete_image, delete_size, add_image, edit_image, login_required
+from wallpaperapp.views import categories_view, delete_category, edit_category, add_category, images_view, settings_view, profile_view, delete_image, delete_size, add_image, edit_image
+from django.contrib.auth.decorators import login_required
 from .forms import LoginForm
 from django.conf import settings
 from django.conf.urls.static import static

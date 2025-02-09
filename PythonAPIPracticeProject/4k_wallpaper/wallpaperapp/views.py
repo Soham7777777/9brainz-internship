@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db.models import Count, Q, Sum
 from django.conf import settings
+
+from image2app.models import ImageDimension
 from .forms import EditImageCategoryForm, ImageCategoryForm, ImageForm, ImageSizeForm, SearchForm, SiteSettingsForm
 from .models import Image, ImageCategory, ImageSize, ImageTags, SiteSettings
 from django.contrib import messages
@@ -119,7 +121,7 @@ def settings_view(request: HttpRequest) -> HttpResponse:
             if form2.is_valid():
                 form2.save()
 
-    sizes = ImageSize.objects.all()
+    sizes = ImageDimension.objects.all()
     return render(request, 'wallpaperapp/settings.html', {'form1': form1, "form2": ImageSizeForm(), "sizes": sizes, "password_change_form": PasswordChangeForm(request.user)})
 
 
@@ -158,7 +160,7 @@ def delete_image(request: HttpRequest) -> HttpResponse:
 @login_required
 def delete_size(request: HttpRequest) -> HttpResponse:
     size_id = request.GET.get('id')
-    size = ImageSize.objects.filter(id=size_id).first()
+    size = ImageDimension.objects.filter(id=size_id).first()
 
     if size:
         size.delete()

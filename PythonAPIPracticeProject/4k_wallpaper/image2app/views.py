@@ -1,10 +1,10 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
-from .models import Image, WallpaperCategory, SiteSettings, ImageDimension
-from .forms import EditImageCategoryForm, ImageCategoryForm, SearchForm, SiteSettingsForm, ImageSizeForm
+from .models import Image, Wallpaper, WallpaperCategory, SiteSettings, ImageDimension, WallpaperTag
+from .forms import EditImageCategoryForm, ImageCategoryForm, SearchForm, SiteSettingsForm, ImageSizeForm, AddWallpaperForm
 from django.contrib.auth.forms import PasswordChangeForm
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.conf import settings
 from django.core.files.storage import default_storage
 import os
@@ -129,3 +129,63 @@ def edit_category(request: HttpRequest) -> HttpResponse:
     else:
         form = EditImageCategoryForm(instance=category)
     return render(request, 'image2app/edit_category.html', {'form': form, 'category': category})
+
+
+@login_required
+def wallpapers_view(request: HttpRequest) -> HttpResponse:
+    form = SearchForm(request.GET)
+
+    wallpapers_data = []
+    wallpapers = Wallpaper.objects.all()
+
+    if form.is_valid():
+        query = form.cleaned_data.get('query', '').strip()
+        if query:
+            wallpapers = wallpapers.filter(
+                Q(name__icontains=query) |
+                Q(tags__tag__icontains=query) |
+                Q(category__name__icontains=query)
+            ).distinct()
+
+    for wallpaper in wallpapers.values('name', 'category', 'id'):
+        tags = list(WallpaperTag.objects.filter(wallpaper_id=wallpaper['id']).values_list('tag', flat=True))
+        category = str(WallpaperCategory.objects.filter(id=wallpaper['category']).first())
+        wallpapers_data.append({**wallpaper, 'tags': tags, 'category': category})
+    
+    return render(request, 'image2app/wallpapers.html', {'wallpapers': wallpapers_data, 'form': form})
+
+
+@login_required
+def add_wallpaper(request: HttpRequest) -> HttpResponse:
+    if request.method == 'POST':
+        form = AddWallpaperForm(request.POST, request.FILES)
+        if form.is_valid():
+            wallpaper = Wallpaper(category=WallpaperCategory.objects.filter(name=form.cleaned_data["category"]).first(), name=form.cleaned_data["name"])
+            wallpaper.save()
+            for tag in form.cleaned_data["tags"]:
+                WallpaperTag(wallpaper=wallpaper, tag=tag).save()
+            for image in form.cleaned_data["image_files"]:
+                Image(wallpaper=wallpaper, image_file=image[0], dimension=ImageDimension.objects.filter(width=image[1][0], height=image[1][1]).first()).save()
+        else:
+            print(form.errors)
+
+    return render(request, 'image2app/add_wallpaper.html', {"form": AddWallpaperForm()})
+
+
+@login_required
+def delete_wallpaper(request: HttpRequest) -> HttpResponse:
+    wallpaper_id = request.GET.get('id')
+
+    wallpaper = Wallpaper.objects.filter(id=wallpaper_id).first()
+
+    if wallpaper:
+        name = str(wallpaper)
+        wallpaper.delete()
+        messages.success(request, f"Wallpaper {name} has been deleted")
+    else:
+        messages.info(request, "wallpaper does not exist")
+    
+    return redirect('wallpapers')
+
+
+

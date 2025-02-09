@@ -1,7 +1,8 @@
 {% url "v2_home" as home_url %}
 {% url "v2_categories" as categories_url %}
-{% comment %} {% url "images" as images_url %} {% endcomment %}
+{% url "wallpapers" as wallpapers_url %}
 {% url "v2_settings" as settings_url %}
+
 
 <li class="nav-item">
     <a class="nav-link {% if request.path != home_url %} collapsed {% endif %}" href="{{ home_url }}">
@@ -11,20 +12,20 @@
 </li>
 
 
- <li class="nav-item">
+<li class="nav-item">
     <a class="nav-link {% if request.path != categories_url %} collapsed {% endif %}" href="{{ categories_url }}">
     <i class="bi bi-boxes fs-4"></i>
     <span>Categories</span>
     </a>
 </li>
 
-{% comment %}
+
 <li class="nav-item">
-    <a class="nav-link {% if request.path != images_url %} collapsed {% endif %}" href="{{ images_url }}">
+    <a class="nav-link {% if request.path != wallpapers_url %} collapsed {% endif %}" href="{{ wallpapers_url }}">
     <i class="bi bi-images fs-4"></i>
-    <span>Images</span>
+    <span>Wallpapers</span>
     </a>
-</li> {% endcomment %}
+</li>
 
 
 <li class="nav-item">

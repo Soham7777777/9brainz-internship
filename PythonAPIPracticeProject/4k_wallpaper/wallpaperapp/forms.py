@@ -1,16 +1,18 @@
 from django import forms
+
+from image2app.models import ImageDimension
 from .models import ImageCategory, ImageSize, SiteSettings
 from django.core.exceptions import ValidationError
 from PIL import Image as PILImage
 import re
 
 
-def validate_name(value):
+def validate_name(value) -> None:
     if not re.match(r'^[A-Za-z]+( [A-Za-z]+)*$', value):
         raise ValidationError("Name should only contain English alphabets and spaces, with no spaces at the start or end.")
 
 
-def validate_image_size(image):
+def validate_image_size(image) -> None:
     if image.size > 1024 * 1024:
         raise ValidationError("Image size should be 1MB or less.")
 
@@ -48,7 +50,7 @@ class SiteSettingsForm(forms.ModelForm):
 
 class ImageSizeForm(forms.ModelForm):
     class Meta:
-        model = ImageSize
+        model = ImageDimension
         fields = ['width', 'height']
         widgets = {
             'width': forms.NumberInput(attrs={'placeholder': 'Width', 'class': 'form-control'}),
@@ -63,7 +65,7 @@ class ImageForm(forms.Form):
 
 
     def clean_image_file(self):
-        image = self.cleaned_data.get("image_file")
+        image = self.cleaned_data.get("image_files")
         site_settings = SiteSettings.objects.first()
         if not site_settings:
             raise ValidationError("Maximum image size limit is not set")

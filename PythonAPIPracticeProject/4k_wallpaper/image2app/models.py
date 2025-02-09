@@ -12,7 +12,7 @@ class WallpaperCategory(models.Model):
 
 class Wallpaper(models.Model):
     category = models.ForeignKey(WallpaperCategory, related_name='wallpapers', on_delete=models.CASCADE)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
 
     def __str__(self) -> str:
         return self.name
@@ -38,7 +38,7 @@ class Image(models.Model):
     wallpaper = models.ForeignKey(Wallpaper, related_name='images', on_delete=models.CASCADE)
     image_file = models.ImageField(upload_to='images/')
     download_count = models.IntegerField(default=0)
-    dimension = models.OneToOneField(ImageDimension, on_delete=models.CASCADE)
+    dimension = models.ForeignKey(ImageDimension, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return str(self.id)

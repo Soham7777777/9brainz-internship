@@ -1,45 +1,21 @@
-(function Program() {
-    "use strict";
-
-    window.tagsArr = []
-    renderTags();
-
-    document.querySelector("#addButton").addEventListener("click", function(event){
-        event.preventDefault()
-
-        let tagString = document.querySelector("#tagInput").value.trim()
-
-        if(tagString!== null && tagString !== '' && !tagString.includes(',')){
-            window.tagsArr.push(tagString)
-            renderTags();
+$(document).ready(function(){
+    $("#file-input").on("change", function(){
+        var files = $(this)[0].files;
+        $("#preview-container").empty();
+        if(files.length > 0){
+            for(var i = 0; i < files.length; i++){
+                var reader = new FileReader();
+                reader.onload = function(e){
+                    $("<div class='preview'><img src='" + e.target.result + "'><button class='delete'>Delete</button></div>").appendTo("#preview-container");
+                };
+                reader.readAsDataURL(files[i]);
+            }
         }
-
-        document.querySelector("#tagInput").value = ''
     });
-}());
 
-
-function submitTags() {
-    document.getElementById("tagInput").value = window.tagsArr.join(',')
-    document.getElementById("finalForm").submit()
-    document.getElementById("tagInput").value = ''
-}
-
-function renderTags() {
-    document.querySelector('#tagsContainer').innerHTML = ''
-    let i = 1
-    for (const tagString of window.tagsArr) {
-        document.querySelector('#tagsContainer').innerHTML += `<span class="badge rounded-pill text-bg-primary" id="tag${i}" onclick="removeTag('${tagString}')"> <span>${tagString}</span> <button class="btn p-0 ms-1">x</button></span>`
-        i += 1
-    }
-}
-
-function removeTag(element) {
-    const index = window.tagsArr.indexOf(element);
+    $("#preview-container").on("click", ".delete", function(){
+        $(this).parent(".preview").remove();
+        $("#file-input").val(""); // Clear input value if needed
+    });
     
-    if (index !== -1) {
-        window.tagsArr.splice(index, 1);
-        renderTags();
-    }
-
-}
+});
