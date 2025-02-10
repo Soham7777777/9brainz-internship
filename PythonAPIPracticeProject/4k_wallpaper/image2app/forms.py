@@ -1,11 +1,13 @@
+import os
 import re
+import time
 from django import forms
 from .models import ImageDimension, WallpaperCategory
 from wallpaperapp.models import SiteSettings
 from django.core.exceptions import ValidationError
 from PIL import Image as PILImage
 from django.core.files.images import ImageFile
-from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
 import io
 
 
@@ -85,10 +87,11 @@ class AddWallpaperForm(forms.Form):
     tags = forms.CharField()
 
 
-    def clean_image_files(self):
+    def clean_image_files(self) -> list[tuple[UploadedFile, tuple[int, int]]]:
         images = self.cleaned_data['image_files']
 
         image_data = []
+
         for image in images:
             site_settings = SiteSettings.objects.first()
             if not site_settings:
@@ -104,15 +107,18 @@ class AddWallpaperForm(forms.Form):
             if not valid_sizes:
                 raise ValidationError("There are no sizes to match against")
 
-            if (width, height) not in valid_sizes:
-                raise ValidationError("Image does not match to any supported dimensions")
+            if (width, height) in valid_sizes:
+                ext = os.path.splitext(image.name)[1]
+                image.name = f"image{''.join(str(time.time()).split('.'))}{ext}"
+                image_data.append((image, (width, height)))
             
-            image_data.append((image, (width, height)))
+        if not any(image_data):
+            raise ValidationError("At least one valid image is needed")
 
         return image_data
 
 
-    def clean_tags(self):
+    def clean_tags(self) -> list[str]:
         tags_value = self.cleaned_data.get("tags", "")
         tags = [tag.strip() for tag in tags_value.split(",") if tag.strip()]
         if not tags:

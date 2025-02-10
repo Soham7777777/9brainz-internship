@@ -5,9 +5,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.db.models import Count, Q, Sum
 from django.conf import settings
 
-from image2app.models import ImageDimension
+from image2app.models import ImageDimension, WallpaperCategory, Image
 from .forms import EditImageCategoryForm, ImageCategoryForm, ImageForm, ImageSizeForm, SearchForm, SiteSettingsForm
-from .models import Image, ImageCategory, ImageSize, ImageTags, SiteSettings
+from .models import ImageCategory, ImageSize, ImageTags, SiteSettings
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.files.storage import default_storage
@@ -128,7 +128,7 @@ def settings_view(request: HttpRequest) -> HttpResponse:
 @login_required
 def profile_view(request: HttpRequest) -> HttpResponse:
     user = request.user
-    total_categories = ImageCategory.objects.count()
+    total_categories = WallpaperCategory.objects.count()
     total_images = Image.objects.count()
     total_downloads = Image.objects.aggregate(Sum('download_count'))['download_count__sum'] or 0
 

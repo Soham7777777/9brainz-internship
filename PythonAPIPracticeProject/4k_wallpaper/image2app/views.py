@@ -160,22 +160,29 @@ def add_wallpaper(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = AddWallpaperForm(request.POST, request.FILES)
         if form.is_valid():
+            images = form.cleaned_data["image_files"]
+
             wallpaper = Wallpaper(category=WallpaperCategory.objects.filter(name=form.cleaned_data["category"]).first(), name=form.cleaned_data["name"])
             wallpaper.save()
+
             for tag in form.cleaned_data["tags"]:
                 WallpaperTag(wallpaper=wallpaper, tag=tag).save()
-            for image in form.cleaned_data["image_files"]:
+            
+            for image in images:
                 Image(wallpaper=wallpaper, image_file=image[0], dimension=ImageDimension.objects.filter(width=image[1][0], height=image[1][1]).first()).save()
-        else:
-            print(form.errors)
+            
+            messages.success(request, f"Wallpaper {wallpaper.name} added successfully")
+            return redirect("wallpapers")
 
-    return render(request, 'image2app/add_wallpaper.html', {"form": AddWallpaperForm()})
+    else:
+        form = AddWallpaperForm()
+
+    return render(request, 'image2app/add_wallpaper.html', {"form": form, "sizes": ImageDimension.objects.all()})
 
 
 @login_required
 def delete_wallpaper(request: HttpRequest) -> HttpResponse:
     wallpaper_id = request.GET.get('id')
-
     wallpaper = Wallpaper.objects.filter(id=wallpaper_id).first()
 
     if wallpaper:
@@ -186,6 +193,5 @@ def delete_wallpaper(request: HttpRequest) -> HttpResponse:
         messages.info(request, "wallpaper does not exist")
     
     return redirect('wallpapers')
-
 
 

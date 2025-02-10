@@ -23,7 +23,7 @@ class Image(models.Model):
     download_count = models.IntegerField(default=0)
 
     def __str__(self) -> str:
-        return self.id
+        return str(self.id)
 
 
 class ImageSize(models.Model):
