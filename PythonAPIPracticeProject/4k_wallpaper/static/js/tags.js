@@ -27,6 +27,7 @@ function submitTags() {
     document.getElementById("tagInput").value = ''
 }
 
+
 function renderTags() {
     document.querySelector('#tagsContainer').innerHTML = ''
     let i = 1
@@ -35,6 +36,7 @@ function renderTags() {
         i += 1
     }
 }
+
 
 function removeTag(element) {
     const index = window.tagsArr.indexOf(element);

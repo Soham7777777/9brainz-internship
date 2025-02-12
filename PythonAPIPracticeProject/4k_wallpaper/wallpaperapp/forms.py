@@ -42,10 +42,8 @@ class EditImageCategoryForm(forms.ModelForm):
 class SiteSettingsForm(forms.ModelForm):
     class Meta:
         model = SiteSettings
-        fields = ['max_image_size']
-        widgets = {
-            'max_image_size': forms.NumberInput(attrs={'min': 1, 'class': 'form-control'})
-        }
+        fields = ['max_image_size', 'compress_image_on_save']
+        
 
 
 class ImageSizeForm(forms.ModelForm):
@@ -96,3 +94,5 @@ class ImageForm(forms.Form):
             raise ValidationError("Tags must only contain lowercase letters and spaces")
 
         return tags
+
+

@@ -8,7 +8,7 @@
 {% block main %}
 
 <div class="mb-3 mt-5">
-    <h3>Change Maximum Image File Size</h3> <hr>
+    <h3>Change Image File Settings</h3> <hr>
 </div>
 
 <form method="post">
@@ -30,17 +30,22 @@
             {% endfor %}
         </div>
     {% endif %}
+    
+    <div class="mb-3">
+        <label for="{{ form1.compress_image_on_save.id_for_label }}"> Compress images when saved </label>
+        {{ form1.compress_image_on_save|add_class:"form-check-input"|default:form1.compress_image_on_save.value }} <br>
+    </div>
 
     <label for="{{ form1.max_image_size.id_for_label }}">Max Image File Size in kb</label>
-    
+
     <div class="input-group mb-3 mt-2">
         {{ form1.max_image_size|add_class:"form-control"|attr:"placeholder:Enter max image size"|default:form1.max_image_size.value }}
 
-        <button type="submit" class="btn btn-primary" name="form1_submit">Update</button>
     </div>
+    <button type="submit" class="btn btn-primary" name="form1_submit">Update</button>
 </form>
 
-<p>Want to change admin password? <a href="{% url "change_password" %}">click here</a></p>
+<p class="mt-5">Want to change admin password? <a href="{% url "change_password" %}">click here</a></p>
 
 <div class="mb-3 mt-5">
     <h3>Add Image Dimensions</h3> <hr>
@@ -107,7 +112,26 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ size.width }} x {{ size.height }}</td>
-                    <td><a class="text-danger" href="{% url "delete_size" %}{% querystring id=size.id %}"><i class="bi bi-trash3-fill"></i></a></td>
+                    <td><button type="button" class="btn btn-outline-danger fw-bold" data-bs-toggle="modal" data-bs-target="#deleteSizeModal{{ size.id }}"><i class="bi bi-trash3-fill"></i></button></td>
+
+                    <div class="modal fade" id="deleteSizeModal{{ size.id }}" tabindex="-1" aria-labelledby="delete size modal" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="deleteSizeModalHeader{{ size.id }}">Also Delete Images</h1>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p>Do want to delete all images that have size {{ size.width }} x {{ size.height }} or delete the size and preserve images?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a class="btn btn-danger" href="{% url "delete_size" %}{% querystring id=size.id %}">Delete size and images</a>
+                                <a class="btn btn-info" href="{% url "delete_size" %}{% querystring id=size.id soft="true" %}">Delete size and preserve images</a>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+
                 </tr>
             {% endfor %}
         </tbody>

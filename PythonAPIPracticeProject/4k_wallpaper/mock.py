@@ -1,9 +1,11 @@
+import tempfile
+import time
 import django
 import os
 from pathlib import Path
-from django.core.files import File
+from django.core.files.images import ImageFile
 import random
-
+from PIL import Image as ImageTools
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wallpaperzzz.settings")
 django.setup()
@@ -11,6 +13,8 @@ django.setup()
 
 from image2app.models import Wallpaper, WallpaperCategory, WallpaperTag, Image, ImageDimension
 from userapp.models import User
+from wallpaperapp.models import SiteSettings
+
 
 MOCK_IMAGES_DIR = 'mock_images/wallpapers'
 
@@ -29,6 +33,8 @@ tags = [
 def main() -> None:
     User.objects.create_superuser(email="sohamjobanputra7@gmail.com", password="soham@123")
 
+    SiteSettings(max_image_size=2000, compress_image_on_save=True).save()
+
     size1 = ImageDimension(width=3840, height=2160)
     size2 = ImageDimension(width=1920, height=1080)
     size3 = ImageDimension(width=1280, height=720)
@@ -42,9 +48,12 @@ def main() -> None:
     thumbnail3_path = os.path.join(MOCK_IMAGES_DIR, 'Category3', 'thumbnail.png')
 
 
-    category1 = WallpaperCategory(name="Nature", thumbnail=File(Path(thumbnail1_path).open(mode="rb")))
-    category2 = WallpaperCategory(name="Technology", thumbnail=File(Path(thumbnail2_path).open(mode="rb")))
-    category3 = WallpaperCategory(name="Portraits", thumbnail=File(Path(thumbnail3_path).open(mode="rb")))
+    category1 = WallpaperCategory(name="Nature", thumbnail=ImageFile(Path(thumbnail1_path).open(mode="rb")))
+    category2 = WallpaperCategory(name="Technology", thumbnail=ImageFile(Path(thumbnail2_path).open(mode="rb")))
+    category3 = WallpaperCategory(name="Portraits", thumbnail=ImageFile(Path(thumbnail3_path).open(mode="rb")))
+    category1.thumbnail.name = '-'.join(category1.name.lower().split()) + category1.thumbnail.name[category1.thumbnail.name.rfind('.'):]
+    category2.thumbnail.name = '-'.join(category2.name.lower().split()) + category2.thumbnail.name[category2.thumbnail.name.rfind('.'):]
+    category3.thumbnail.name = '-'.join(category3.name.lower().split()) + category3.thumbnail.name[category3.thumbnail.name.rfind('.'):]
     category1.save()
     category2.save()
     category3.save()
@@ -116,8 +125,16 @@ def main() -> None:
     i = 0
     for wallpaper in wallpapers:
         for dimension in [size1, size2, size3]:
-            Image(wallpaper=wallpaper, dimension=dimension, image_file=File(Path(image_paths[i]).open(mode="rb"))).save()
+            image_instance = Image(wallpaper=wallpaper, dimension=dimension, image_file=ImageFile(Path(image_paths[i]).open(mode="rb"), name=f"image{''.join(str(time.time()).split('.'))}.png"), download_count=random.randint(43, 89))
+            image_instance.save()
             i += 1
+
+        with tempfile.NamedTemporaryFile("wb") as tmp_file:        
+            with ImageTools.open(image_instance.image_file.path) as img:
+                img.thumbnail((264, 149))
+                img.save(tmp_file.name, 'png')
+            wallpaper.thumbnail = ImageFile(Path(tmp_file.name).open("rb"), name='thumbnail'+''.join(str(time.time()).split('.'))+'.png')
+        wallpaper.save()
 
 
 if __name__ == '__main__':

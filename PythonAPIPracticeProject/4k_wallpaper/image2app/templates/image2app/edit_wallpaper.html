@@ -1,0 +1,138 @@
+{% extends "wallpaperapp/base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %} Edit Wallpaper {% endblock title %}
+
+{% block style %}
+<style>
+    .preview {
+        display: inline-block;
+        margin: 10px;
+    }
+    .preview img {
+        width: 100px;
+        height: 100px;
+        margin-right: 10px;
+    }
+</style>
+{% endblock style %}
+
+
+{% block main %}
+<div class="mb-5">
+    <h2>Edit Wallpaper: {{ wallpaper.name }}</h2> <hr>
+</div>
+
+<div class="container mt-5">
+    <form method="post" id="finalForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+
+        <div class="form-group mb-4">
+            <label for="{{ form.name.id_for_label }}">Name</label>
+            {{ form.name|add_class:"form-control" }}
+            {% if form.name.errors %}
+                <div class="text-danger">
+                    {% for error in form.name.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="mb-4">
+            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+            {% comment %} {% render_field form.category class="form-select" %} {% endcomment %}
+            {{ form.category|add_class:"form-select" }}
+            {% if form.category.errors %}
+                <div class="text-danger">
+                    {% for error in form.category.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <div class="form-group mb-4">
+            <label for="{{ form.image_files.id_for_label }}">Upload Images</label>
+            <div id="preview-container">
+                {% for image in images %}
+                    <div class='preview'>
+                        <img src="{{ image.image_file.url }}" alt='Image Preview'>
+                        <p>Size: {{ image.dimension}}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            {{ form.image_files|add_class:"form-control"|attr:"multiple:true"|attr:"id:file-input"|attr:"accept:image/*" }}
+            {% if form.image_files.errors %}
+                <div class="text-danger">
+                    {% for error in form.image_files.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+
+        <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
+        <div id="tagsContainer" class="d-flex flex-wrap mb-3 gap-2"></div>
+
+        <div class="row g-3">
+            <div class="col-auto">
+                {{ form.tags|add_class:"form-control"|attr:"id:tagInput"|attr:"placeholder:Add a tag" }}
+                {% if form.tags.errors %}
+                    <div class="text-danger">
+                        {% for error in form.tags.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="button" class="btn btn-primary mt-2" id="addButton">Add Tag</button>
+
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <button type="button" class="btn btn-success" onclick="submitTags()">Edit Image</button>
+        </div>
+    </form>
+</div>
+{% endblock main %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.tagsArr = [
+        {% for tag in tags %}
+            "{{ tag.tag }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    renderTags()
+    document.querySelector("#tagInput").value = ''
+});
+    
+
+    window.ValidSizes = [
+        {% for size in sizes %}
+            [{{ size.width }}, {{ size.height }}],
+        {% endfor %}
+    ]
+</script>
+<script src="{% static 'js/tags.js' %}"></script>
+<script src="{% static "js/add_wallpaper.js" %}"></script>
+{% endblock script %}

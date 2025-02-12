@@ -4,29 +4,76 @@
 {% block title %} Wallpapers {% endblock title %}
 
 {% block main %}
-<form method="get" class="col-auto">
+<form method="get" class="col-auto mb-5">
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">
           <div class="input-group">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-             {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
-            <button type="submit" class="btn btn-primary fw-bold">Search</button>
+            {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
+            {{ category_filter_form.category|add_class:"form-select" }}
+            <span class="col-form-label mx-2">Per Page</span>
+            {{ pagination_form.per_page_objects|add_class:"form-select" }}
+            <button type="submit" class="btn btn-primary fw-bold">Fetch</button>
             <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "add_wallpaper" %}')">Add New Wallpaper</button>
           </div>
         </div>
       </div>
     </div>
 </form>
+
+
 {% if wallpapers %}
 {% for wallpaper in wallpapers %}
+<img src="{{ wallpaper.thumbnail_url }}" alt="Thumbnail"> <br>
 <span> Name: </span><span class="fw-bold">{{ wallpaper.name }}</span> <br>
 <span> Category: </span><span class="fw-bold">{{ wallpaper.category }}</span> <br>
-<span> Tags: </span><span> {{ wallpaper.tags }} </span> <br>
-<a style="color:red;" href="{% url "delete_wallpaper" %}{% querystring id=wallpaper.id %}">Delete</a>
+<span> Tags: </span><span class="fw-bold"> {{ wallpaper.tags }} </span> <br>
+<span> Dimensions: </span><span class="fw-bold"> {{ wallpaper.dimensions }} </span> <br>
+<span> Download Count: </span><span class="fw-bold"> {{ wallpaper.download_count }} </span> <br>
+<button type="button" class="btn btn-outline-danger fw-bold" data-bs-toggle="modal" data-bs-target="#deleteWallpaperModal{{ wallpaper.id }}"><i class="bi bi-trash3-fill"></i></button> <br>
+
+<div class="modal fade" id="deleteWallpaperModal{{ wallpaper.id }}" tabindex="-1" aria-labelledby="delete wallpaper modal" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteWallpaperModalHeader{{ wallpaper.id }}">Delete Wallpaper</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete wallpaper {{ wallpaper.name }}? <span class="fw-bold">This will delete wallpaper permanently.</span></p>
+      </div>
+      <div class="modal-footer">
+          <a class="btn btn-danger" href="{% url "delete_wallpaper" %}{% querystring id=wallpaper.id %}">Yes</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a style="color:blue;" href="{% url "edit_wallpaper" %}{% querystring id=wallpaper.id %}">Edit</a>
 <br>
 <hr>
 {% endfor %}
+
+<ul class="pagination">
+  <li class="page-item {% if not previous_page_number %} disabled {% endif %}">
+    <a class="page-link" {% if previous_page_number %} href="{{ request.path }}{% querystring page_number=previous_page_number %}" {% else %} href="" tabindex="-1" aria-disabled="true" {% endif %}>Previous</a>
+  </li>
+
+  {% for page_number in page_range %}
+
+  <li {% if page_number == current_page_number %} class="page-item active" aria-current="page" {% else %} class="page-item" {% endif %}>
+    <a class="page-link" href="{{ request.path }}{% querystring page_number=page_number %}">{{ page_number }}</a>
+  </li>
+
+  {% endfor %}
+
+  <li class="page-item {% if not next_page_number %} disabled {% endif %}">
+    <a class="page-link" {% if next_page_number %} href="{{ request.path }}{% querystring page_number=next_page_number %}" {% else %} href="" tabindex="-1" aria-disabled="true" {% endif %} >Next</a>
+  </li>
+</ul>
+
+
 {% else %}
 No wallpapers
 {% endif %}

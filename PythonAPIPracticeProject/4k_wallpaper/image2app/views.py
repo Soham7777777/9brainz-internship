@@ -1,14 +1,20 @@
+from pathlib import Path
+import tempfile
+import time
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from .models import Image, Wallpaper, WallpaperCategory, SiteSettings, ImageDimension, WallpaperTag
-from .forms import EditImageCategoryForm, ImageCategoryForm, SearchForm, SiteSettingsForm, ImageSizeForm, AddWallpaperForm
+from .forms import CategoryForm, EditImageCategoryForm, ImageCategoryForm, PaginationForm, SearchForm, SiteSettingsForm, ImageSizeForm, AddWallpaperForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.db.models import Sum, Q
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.core.files.images import ImageFile
 import os
 from django.contrib import messages
+from PIL import Image as ImageTools
+from django.core.paginator import Paginator, InvalidPage
 
 
 @login_required
@@ -134,9 +140,15 @@ def edit_category(request: HttpRequest) -> HttpResponse:
 @login_required
 def wallpapers_view(request: HttpRequest) -> HttpResponse:
     form = SearchForm(request.GET)
+    category_filter_form = CategoryForm(request.GET)
+    pagination_form = PaginationForm(request.GET)
 
     wallpapers_data = []
-    wallpapers = Wallpaper.objects.all()
+
+    if category_filter_form.is_valid() and category_filter_form.cleaned_data["category"]:
+        wallpapers = Wallpaper.objects.filter(category=category_filter_form.cleaned_data["category"]).all()
+    else:
+        wallpapers = Wallpaper.objects.all()
 
     if form.is_valid():
         query = form.cleaned_data.get('query', '').strip()
@@ -150,9 +162,34 @@ def wallpapers_view(request: HttpRequest) -> HttpResponse:
     for wallpaper in wallpapers.values('name', 'category', 'id'):
         tags = list(WallpaperTag.objects.filter(wallpaper_id=wallpaper['id']).values_list('tag', flat=True))
         category = str(WallpaperCategory.objects.filter(id=wallpaper['category']).first())
-        wallpapers_data.append({**wallpaper, 'tags': tags, 'category': category})
+        images = Image.objects.filter(wallpaper=Wallpaper.objects.filter(id=wallpaper["id"]).first()).all()
+        thumbnail_url = Wallpaper.objects.filter(id=wallpaper['id']).first().thumbnail.url # type: ignore
+        dimensions = []
+        download_count = 0
+        for image in images:
+            dimensions.append(str(image.dimension))
+            download_count += image.download_count
+        wallpapers_data.append({**wallpaper, 'tags': tags, 'category': category, 'dimensions': dimensions, 'download_count': download_count, 'thumbnail_url': thumbnail_url})
     
-    return render(request, 'image2app/wallpapers.html', {'wallpapers': wallpapers_data, 'form': form})
+    if pagination_form.is_valid():
+        pages = Paginator(wallpapers_data, pagination_form.cleaned_data["per_page_objects"])
+        try:
+            current_page = pages.page(request.GET.get('page_number', None))
+        except InvalidPage as e:
+            current_page = pages.page(1)
+    else:
+        pages = Paginator(wallpapers_data, 3)
+        current_page = pages.page(1)
+
+    page_range = pages.page_range
+    wallpapers_data = current_page.object_list
+    current_page_number = current_page.number
+    next_page_number = (current_page_number + 1) if current_page.has_next() else None
+    previous_page_number = (current_page_number - 1) if current_page.has_previous() else None
+
+    print(page_range)
+
+    return render(request, 'image2app/wallpapers.html', {'wallpapers': wallpapers_data, 'form': form, 'category_filter_form': category_filter_form, 'pagination_form': pagination_form, 'next_page_number': next_page_number, 'previous_page_number': previous_page_number, 'current_page_number': current_page_number, 'page_range': page_range})
 
 
 @login_required
@@ -165,11 +202,20 @@ def add_wallpaper(request: HttpRequest) -> HttpResponse:
             wallpaper = Wallpaper(category=WallpaperCategory.objects.filter(name=form.cleaned_data["category"]).first(), name=form.cleaned_data["name"])
             wallpaper.save()
 
-            for tag in form.cleaned_data["tags"]:
-                WallpaperTag(wallpaper=wallpaper, tag=tag).save()
+            WallpaperTag.objects.bulk_create(
+                [WallpaperTag(wallpaper=wallpaper, tag=tag) for tag in set(form.cleaned_data["tags"])]
+            )
             
             for image in images:
-                Image(wallpaper=wallpaper, image_file=image[0], dimension=ImageDimension.objects.filter(width=image[1][0], height=image[1][1]).first()).save()
+                image_instance = Image(wallpaper=wallpaper, image_file=image[0], dimension=ImageDimension.objects.filter(width=image[1][0], height=image[1][1]).first())
+                image_instance.save()
+
+            with tempfile.NamedTemporaryFile("wb") as tmp_file:        
+                with ImageTools.open(image_instance.image_file.path) as img:
+                    img.thumbnail((264, 149))
+                    img.save(tmp_file.name, 'png')
+                wallpaper.thumbnail = ImageFile(Path(tmp_file.name).open("rb"), name='thumbnail'+''.join(str(time.time()).split('.'))+'.png')
+            wallpaper.save()
             
             messages.success(request, f"Wallpaper {wallpaper.name} added successfully")
             return redirect("wallpapers")
@@ -193,5 +239,41 @@ def delete_wallpaper(request: HttpRequest) -> HttpResponse:
         messages.info(request, "wallpaper does not exist")
     
     return redirect('wallpapers')
+
+
+@login_required
+def edit_wallpaper(request: HttpRequest) -> HttpResponse:
+    wallpaper_id = request.GET.get('id')
+    wallpaper = get_object_or_404(Wallpaper, id=wallpaper_id)
+    images = Image.objects.filter(wallpaper=wallpaper).all()
+    tags = WallpaperTag.objects.filter(wallpaper=wallpaper).all()
+
+    if request.method == "POST":
+        form = AddWallpaperForm(request.POST, request.FILES)
+        form.editing = True
+        if form.is_valid():
+            new_images = form.cleaned_data["image_files"]
+
+            wallpaper.name = form.cleaned_data["name"]
+            wallpaper.category = form.cleaned_data["category"]
+            wallpaper.save()
+
+            WallpaperTag.objects.filter(wallpaper=wallpaper).all().delete()
+            WallpaperTag.objects.bulk_create(
+                [WallpaperTag(wallpaper=wallpaper, tag=tag) for tag in set(form.cleaned_data["tags"])]
+            )
+
+            if request.FILES:
+                images.delete()
+                for image in new_images:
+                    Image(wallpaper=wallpaper, image_file=image[0], dimension=ImageDimension.objects.filter(width=image[1][0], height=image[1][1]).first()).save()
+            
+            messages.success(request, f"Wallpaper {wallpaper.name} edited successfully")
+            return redirect("wallpapers")
+
+    else:
+        form = AddWallpaperForm(initial={"name": wallpaper.name, "category": wallpaper.category})
+    
+    return render(request, 'image2app/edit_wallpaper.html', {"form": form, "wallpaper": wallpaper, "images": images, "sizes": ImageDimension.objects.all(), "tags": tags, 'MEDIA_URL': settings.MEDIA_URL})
 
 

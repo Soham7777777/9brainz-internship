@@ -21,8 +21,6 @@
 // });
 
 
-
-
 $(document).ready(function(){
     $("#file-input").on("change", function(){
         var files = $(this)[0].files;

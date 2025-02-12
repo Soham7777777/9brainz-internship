@@ -33,3 +33,4 @@ class ImageSize(models.Model):
 
 class SiteSettings(models.Model):
     max_image_size = models.IntegerField(validators=[MinValueValidator(1)])
+    compress_image_on_save = models.BooleanField(default=True)

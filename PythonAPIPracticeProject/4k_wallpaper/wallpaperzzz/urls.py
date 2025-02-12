@@ -26,10 +26,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('', profile_view, name="home"),
 
-    path('categories', categories_view, name="categories"),
-    path('delete-category', delete_category, name="delete_category"),
-    path('edit-category', edit_category, name="edit_category"),
-    path('add-category', add_category, name="add_category"),
+    # path('categories', categories_view, name="categories"),
+    # path('delete-category', delete_category, name="delete_category"),
+    # path('edit-category', edit_category, name="edit_category"),
+    # path('add-category', add_category, name="add_category"),
 
     path('images', images_view, name="images"),
     path('delete-image', delete_image, name="delete_image"),

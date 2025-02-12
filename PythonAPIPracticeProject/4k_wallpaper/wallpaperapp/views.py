@@ -4,10 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.db.models import Count, Q, Sum
 from django.conf import settings
-
+import image2app.models as imodels
 from image2app.models import ImageDimension, WallpaperCategory, Image
 from .forms import EditImageCategoryForm, ImageCategoryForm, ImageForm, ImageSizeForm, SearchForm, SiteSettingsForm
-from .models import ImageCategory, ImageSize, ImageTags, SiteSettings
+from .models import ImageCategory, ImageTags, SiteSettings
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.files.storage import default_storage
@@ -160,6 +160,10 @@ def delete_image(request: HttpRequest) -> HttpResponse:
 @login_required
 def delete_size(request: HttpRequest) -> HttpResponse:
     size_id = request.GET.get('id')
+
+    is_soft = request.GET.get('soft', None)
+    imodels.IS_SOFT = True if is_soft == "true" else False
+    
     size = ImageDimension.objects.filter(id=size_id).first()
 
     if size:

@@ -8,45 +8,75 @@
 {% block main %}
 
 <form method="get" class="col-auto">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-12">
-        <div class="input-group">
-          <span class="input-group-text"><i class="bi bi-search"></i></span>
-           {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
-          <button type="submit" class="btn btn-primary fw-bold">Search</button>
-          <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "v2_add_category" %}')">Add New Category</button>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    {{ form.query|add_class:"form-control"|attr:"placeholder:search here" }}
+                    <button type="submit" class="btn btn-primary fw-bold">Search</button>
+                    <button type="button" class="btn btn-success fw-bold" onclick="sendRequest('{% url "v2_add_category" %}')">Add New Category</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </form>
 
 {% if categories %}
 {% for category in categories %}
 <div class="card-container my-4">
-  <div class="card d-flex flex-sm-row flex-column w-100">
-    <div class="ratio ratio-16x9 w-25">
-        <img src="{{ MEDIA_URL }}{{ category.thumbnail }}" alt="{{ category.name }}">
-    </div>
-
-    <div class="d-flex flex-column justify-content-between px-3 py-2 w-100">
-      <span class="card-title fs-4 p-0">{{ category.name }}</span>
-      <div class="d-flex align-items-start h-100 pt-2">
-        <div class="overflow-y-scroll" style="max-height: 140px;">
-          <p class="card-text" style="font-size: 1.15em;">
-             Total Images: <span class="fw-bold"> {{ category.image_count }} </span>
-          </p>
+    <div class="card d-flex flex-sm-row flex-column w-100">
+        <div class="ratio ratio-16x9 w-25">
+            <img src="{{ MEDIA_URL }}{{ category.thumbnail }}" alt="{{ category.name }}">
         </div>
-      </div>
-      
-      <div class="text-muted py-2 d-flex justify-content-between">
-        
-        <button type="button" class="btn btn-danger" onclick="sendRequest('{% url "v2_delete_category" %}{% querystring id=category.id %}')"><i class="bi bi-trash3-fill"></i></button>
-        <button type="button" class="btn btn-info" onclick="sendRequest('{% url "v2_edit_category" %}{% querystring id=category.id %}')"><i class="bi bi-pencil-fill"></i></button>
-      </div>
+
+            <div class="d-flex flex-column justify-content-between px-3 py-2 w-100">
+
+                <span class="card-title fs-4 p-0">{{ category.name }}</span>
+                <div class="d-flex align-items-start h-100 pt-2">
+                    <div class="overflow-y-scroll" style="max-height: 140px;">
+                        <p class="card-text" style="font-size: 1.15em;">
+                            Total Images: <span class="fw-bold"> {{ category.image_count }} </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="text-muted py-2 d-flex justify-content-start gap-3">
+
+                    <button type="button" class="btn btn-outline-danger fw-bold" data-bs-toggle="modal"
+                        data-bs-target="#deleteWallpaperCategoryModal{{ category.id }}"><i
+                            class="bi bi-trash3-fill"></i></button>
+                    <button type="button" class="btn btn-info" onclick="sendRequest('{% url "v2_edit_category" %}{% querystring id=category.id %}')"><i class="bi bi-pencil-fill"></i></button>
+                    <button type="button" class="btn btn-primary" onclick="sendRequest('{% url "wallpapers" %}{% querystring category=category.id %}')"><i class="bi bi-eye-fill"></i></button>
+
+
+                    <div class="modal fade" id="deleteWallpaperCategoryModal{{ category.id }}" tabindex="-1"
+                        aria-labelledby="delete wallpaper category modal" aria-hidden="true" data-bs-backdrop="static"
+                        data-bs-keyboard="false">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5"
+                                        id="deleteWallpaperCategoryModalHeader{{ category.id }}">Delete Category</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete category {{ category.name }}? <span
+                                            class="fw-bold">This will delete category and related wallpapers
+                                            permanently.</span></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a class="btn btn-danger" href="{% url "v2_delete_category" %}{% querystring
+                                        id=category.id %}">Yes</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
     </div>
-  </div>
 </div>
 {% endfor %}
 {% else %}
@@ -57,13 +87,13 @@
 {% block script %}
 {{ block.super }}
 <script>
-  function sendRequest(url) {
-    
-    if (url) {
-      window.location.href = url;
-    } else {
-      alert("Please enter a URL.");
+    function sendRequest(url) {
+
+        if (url) {
+            window.location.href = url;
+        } else {
+            alert("Please enter a URL.");
+        }
     }
-  }
 </script>
 {% endblock script %}

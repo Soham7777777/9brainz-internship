@@ -6,9 +6,7 @@ from .models import ImageDimension, WallpaperCategory
 from wallpaperapp.models import SiteSettings
 from django.core.exceptions import ValidationError
 from PIL import Image as PILImage
-from django.core.files.images import ImageFile
 from django.core.files.uploadedfile import UploadedFile
-import io
 
 
 def validate_name(value):
@@ -43,6 +41,20 @@ class SiteSettingsForm(forms.ModelForm):
 class SearchForm(forms.Form):
     query = forms.CharField(max_length=128, required=False, initial='')
 
+
+class CategoryForm(forms.Form):
+    category = forms.ModelChoiceField(queryset=WallpaperCategory.objects.all(), required=False, empty_label='All Categories')
+
+
+class PaginationForm(forms.Form):
+    per_page_objects = forms.ChoiceField(choices=(("3", "3"), ("5", "5"), ("7", "7"), ("10", "10")), initial=3, required=False)
+
+
+    def clean_per_page_objects(self):
+        try:
+            return int(self.cleaned_data['per_page_objects'])
+        except ValueError:
+            return 3
 
 class ImageCategoryForm(forms.ModelForm):
     name = forms.CharField(validators=[validate_name], max_length=255)
@@ -84,8 +96,9 @@ class AddWallpaperForm(forms.Form):
     name = forms.CharField(validators=[validate_name], max_length=255)
     image_files = MultipleFileField()
     category = forms.ModelChoiceField(queryset=WallpaperCategory.objects.all())
-    tags = forms.CharField()
+    tags = forms.CharField(required=False)
 
+    editing = False
 
     def clean_image_files(self) -> list[tuple[UploadedFile, tuple[int, int]]]:
         images = self.cleaned_data['image_files']
@@ -112,7 +125,7 @@ class AddWallpaperForm(forms.Form):
                 image.name = f"image{''.join(str(time.time()).split('.'))}{ext}"
                 image_data.append((image, (width, height)))
             
-        if not any(image_data):
+        if not any(image_data) and not self.editing:
             raise ValidationError("At least one valid image is needed")
 
         return image_data
@@ -121,12 +134,6 @@ class AddWallpaperForm(forms.Form):
     def clean_tags(self) -> list[str]:
         tags_value = self.cleaned_data.get("tags", "")
         tags = [tag.strip() for tag in tags_value.split(",") if tag.strip()]
-        if not tags:
-            raise ValidationError("At least one valid tag is required")
-
-        if not all(tag.islower() and all(c.isalpha() or c.isspace() for c in tag) for tag in tags):
-            raise ValidationError("Tags must only contain lowercase letters and spaces")
-
-        return tags
-
-
+        # if not all(tag.islower() and all(c.isalpha() or c.isspace() for c in tag) for tag in tags):
+        #     raise ValidationError("Tags must only contain lowercase letters and spaces")
+        return tags or []
